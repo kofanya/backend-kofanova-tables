@@ -13,14 +13,13 @@
 | --- | --- |
 | Главная сущность | Столик |
 | Связанная сущность (1:N) | Бронь |
-| Фишка | Бизнес-правило (409): гостей не больше, чем мест, и брони одного столика не пересекаются.
-Статистика: число броней по дням недели. |
+| Фишка | Бизнес-правило (409): гостей не больше, чем мест, и брони одного столика не пересекаются. Статистика: число броней по дням недели. |
 | Стек | Python, FastApi, база данных |
 
 ## Как запустить
 
 ```bash
-git clone [https://github.com/](https://github.com/)kofanya/backend-kofanova-tables.git
+git clone https://github.com/kofanya/backend-kofanova-tables.git
 python -m venv venv
 source venv/Scripts/activate
 pip install -r requirements.txt

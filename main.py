@@ -3,10 +3,19 @@ from pydantic import Field, BaseModel
 from typing import Optional
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+import time
 
 app = FastAPI()
 tables_db = {}
 current_id = 0
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time_ms = (time.time() - start_time) * 1000
+    print(f"{request.method} {request.url.path} {response.status_code} {process_time_ms:.1f}ms")
+    return response
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
