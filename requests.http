@@ -8,37 +8,65 @@
 GET {{base}}/health
 
 ### Создать
-POST {{base}}/api/items
+POST {{base}}/api/tables
 Content-Type: application/json
 
-{ "title": "Первая запись" }
+{
+  "number": "5A",
+  "capacity": 4,
+  "zone": "Терраса"
+}
+
+### Создать
+POST {{base}}/api/tables
+Content-Type: application/json
+
+{
+  "number": "3A",
+  "capacity": 2,
+  "zone": "Окно"
+}
 
 ### Список
-GET {{base}}/api/items
+GET {{base}}/api/tables
 
 ### Получить одну запись
-GET {{base}}/api/items/1
+GET {{base}}/api/tables/1
+
+### список с фильтрацией
+GET {{base}}/api/tables?limit=5&offset=0&zone=Терраса
 
 ### Изменить
-PATCH {{base}}/api/items/1
+PATCH {{base}}/api/tables/1
 Content-Type: application/json
 
-{ "title": "Изменённая запись" }
+{
+  "capacity": 6
+}
 
 ### Удалить
-DELETE {{base}}/api/items/1
+DELETE {{base}}/api/tables/1
 
 ### После удаления должен быть 404
-GET {{base}}/api/items/1
+GET {{base}}/api/tables/1
 
 ### Сломанный JSON, должен быть 400
-POST {{base}}/api/items
+POST {{base}}/api/tables
 Content-Type: application/json
 
-{ "title":
+{
+  "number": "2A",
+  "capacity": -2,
+  "zone": "Терраса"
+}
 
 ### Пустое обязательное поле, должен быть 400
-POST {{base}}/api/items
+POST {{base}}/api/tables
 Content-Type: application/json
 
-{ "title": "" }
+{
+  "number": "",
+  "capacity": 2,
+  "zone": "Терраса"
+}
+

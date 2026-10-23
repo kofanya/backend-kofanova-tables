@@ -1,10 +1,21 @@
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, status, HTTPException,Request
 from pydantic import Field, BaseModel
 from typing import Optional
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 tables_db = {}
 current_id = 0
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error = exc.errors()[0]
+    field_name = error["loc"][-1] if error["loc"] else "body"
+    return JSONResponse(
+        status_code=400,
+        content={"error": error["msg"], "field": str(field_name)}
+    )
 
 class TableCreate(BaseModel):
     number: str = Field(..., min_length=1)
