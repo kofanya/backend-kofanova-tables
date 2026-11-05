@@ -1,10 +1,26 @@
 {
   "base_url": "http://localhost:8000",
-  "resource": "items",
+  "resource": "tables",
   "id_field": "id",
   "missing_id": "999999",
   "list_key": null,
-  "create": { "title": "Первая запись" },
-  "update": { "title": "Изменённая запись" },
-  "required_field": "title"
+  "create": {
+    "number": "5A",
+    "capacity": 4,
+    "zone": "Терраса"
+  },
+  "update": {
+    "capacity": 6
+  },
+  "required_field": "number",
+  "errors": [
+    { "body": { "number": "", "capacity": 4, "zone": "Терраса" }, "field": "number" },
+    { "body": { "number": "5A", "capacity": -1, "zone": "Терраса" }, "field": "capacity" },
+    { "body": { "number": "5A", "capacity": 4, "zone": "" }, "field": "zone" }
+  ],
+  "filter": {
+    "param": "zone",
+    "value": "Терраса",
+    "other": "Окно"
+  }
 }
