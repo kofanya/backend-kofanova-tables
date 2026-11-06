@@ -43,7 +43,7 @@ fastapi dev
 ## ER-диаграмма
 
 <!-- С лабы 2. Блок mermaid GitHub рисует сам. -->
-
+```mermaid
 erDiagram
     tables ||--o{ reservations : "имеет"
 
@@ -61,7 +61,21 @@ erDiagram
         timestamp date_time
         int guests_count
     }
+```
+## Анализ поиска (EXPLAIN)
 
+Запрос для поиска по номеру столика:
+```sql
+EXPLAIN SELECT * FROM tables WHERE number ILIKE '%5A%';
+```
+Вывод базы данных:
+```bash
+QUERY PLAN
+----------------------------------------------------------
+ Seq Scan on tables  (cost=0.00..20.12 rows=162 width=72)
+   Filter: ((number)::text ~~* '%5A%'::text)
+(2 rows)
+```
 ## Интерфейс
 
 <!-- С лабы 4: скриншот, например ![Интерфейс](docs/screenshot.png) -->

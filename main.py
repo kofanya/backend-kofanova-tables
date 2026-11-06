@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 import time
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Table as DBTable, Reservation as DBReservation
@@ -191,3 +191,17 @@ def delete_reservation(reservation_id: int, db: Session = Depends(get_db)):
 
     db.delete(db_reservation)
     db.commit()
+
+# Получить статистику бронирований по дням недели
+@app.get("/api/reservations/stats")
+def get_reservations_stats(db: Session = Depends(get_db)):
+    day_of_week = func.extract('isodow', DBReservation.date_time)
+    
+    stmt = select(
+        day_of_week.label('day'),
+        func.count(DBReservation.id).label('count')
+    ).group_by(day_of_week)
+    
+    result = db.execute(stmt).all()
+
+    return [{"day_of_week": int(row.day), "total_reservations": row.count} for row in result]
