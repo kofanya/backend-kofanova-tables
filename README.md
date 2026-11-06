@@ -14,7 +14,7 @@
 | Главная сущность | Столик |
 | Связанная сущность (1:N) | Бронь |
 | Фишка | Бизнес-правило (409): гостей не больше, чем мест, и брони одного столика не пересекаются. Статистика: число броней по дням недели. |
-| Стек | Python, FastApi, база данных |
+| Стек | Python, FastApi, PostgreSQL |
 
 ## Как запустить
 
@@ -44,18 +44,23 @@ fastapi dev
 
 <!-- С лабы 2. Блок mermaid GitHub рисует сам. -->
 
-```mermaid
 erDiagram
-    parents ||--o{ children : "имеет"
-    parents {
+    tables ||--o{ reservations : "имеет"
+
+    tables {
         int id PK
-        varchar title
+        varchar number
+        int capacity
+        varchar zone
     }
-    children {
+
+    reservations {
         int id PK
-        int parent_id FK
+        int table_id FK
+        varchar guest_name
+        timestamp date_time
+        int guests_count
     }
-```
 
 ## Интерфейс
 
