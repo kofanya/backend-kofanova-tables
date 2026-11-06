@@ -1,6 +1,16 @@
 {
-  "text_field": "number",
+  "resource": "tables",
   "create": { "number": "10A", "capacity": 4, "zone": "Зал" },
+  "update": { "capacity": 6 },
+  "required_field": "number",
+  "errors": [
+    { "body": { "number": "" }, "field": "number" },
+    { "body": { "capacity": -1 }, "field": "capacity" },
+    { "body": { "zone": "" }, "field": "zone" }
+  ],
+  "filter": { "param": "zone", "value": "Зал", "other": "Окно" },
+  
+  "text_field": "number",
   "search": { "param": "q", "field": "number" },
   "child": {
     "resource": "reservations",
@@ -11,17 +21,9 @@
     "description": "Брони одного столика не пересекаются во времени",
     "parent": { "capacity": 4 },
     "setup": [
-      { 
-        "method": "POST", 
-        "path": "/api/tables/{id}/reservations", 
-        "body": { "guest_name": "Иванов", "date_time": "2026-10-25T19:00:00", "guests_count": 2 } 
-      }
+      { "method": "POST", "path": "/api/tables/{id}/reservations", "body": { "guest_name": "Иванов", "date_time": "2026-10-25T19:00:00", "guests_count": 2 } }
     ],
-    "violate": { 
-      "method": "POST", 
-      "path": "/api/tables/{id}/reservations", 
-      "body": { "guest_name": "Петров", "date_time": "2026-10-25T20:00:00", "guests_count": 2 } 
-    },
+    "violate": { "method": "POST", "path": "/api/tables/{id}/reservations", "body": { "guest_name": "Петров", "date_time": "2026-10-25T20:00:00", "guests_count": 2 } },
     "expect_status": 409
   },
   "stats_path": "/api/reservations/stats"

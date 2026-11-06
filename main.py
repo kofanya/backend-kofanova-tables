@@ -150,7 +150,7 @@ def create_reservation(table_id: int, reservation_in: ReservationCreate, db: Ses
             detail=f"Гостей больше, чем вместимость столика. Вместимость столика: {db_table.capacity}"
         )
     
-    duration = datetime.timedelta(hours=2)
+    duration = timedelta(hours=2)
     new_start = reservation_in.date_time
     new_end = new_start + duration
 
