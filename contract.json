@@ -1,5 +1,6 @@
 {
   "text_field": "number",
+  "create": { "number": "10A", "capacity": 4, "zone": "Зал" },
   "search": { "param": "q", "field": "number" },
   "child": {
     "resource": "reservations",
@@ -25,4 +26,3 @@
   },
   "stats_path": "/api/reservations/stats"
 }
-
