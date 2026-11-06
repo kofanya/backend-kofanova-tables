@@ -1,3 +1,4 @@
+import datetime
 from fastapi import Depends, FastAPI, status, HTTPException,Request
 from pydantic import Field, BaseModel
 from typing import Optional
@@ -8,7 +9,7 @@ import time
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Table as DBTable
+from models import Table as DBTable, Reservation as DBReservation
 
 app = FastAPI()
 
@@ -41,6 +42,15 @@ class TableUpdate(BaseModel):
 
 class Table(TableCreate):
     id: int
+
+class ReservationCreate(BaseModel):
+    guest_name: str = Field(..., min_length=1)
+    date_time: datetime 
+    guests_count: int = Field(..., gt=0)
+
+class ReservationResponse(ReservationCreate):
+    id: int
+    table_id: int
 
 @app.get("/health")
 def health_check():
@@ -109,3 +119,14 @@ def update_table(table_id: int, table_in: TableUpdate, db: Session = Depends(get
     db.commit()
     db.refresh(db_table)
     return db_table
+
+@app.get("/api/tables/{table_id}/reservations", response_model=list[ReservationResponse])
+def get_table_reservations(table_id: int, db: Session = Depends(get_db)):
+    db_table = db.get(DBTable, table_id)
+    if not db_table:
+        raise HTTPException(status_code=404, detail="Table not found")
+    
+    stmt = select(DBReservation).where(DBReservation.table_id == table_id)
+    result = db.execute(stmt).scalars().all()
+    
+    return result
