@@ -56,6 +56,7 @@ class ReservationResponse(ReservationCreate):
 def health_check():
     return {"status": "ok"}
 
+# Создать новый столик
 @app.post("/api/tables", status_code=status.HTTP_201_CREATED, response_model=Table)
 def create_table(table_in: TableCreate, db: Session = Depends(get_db)):
     new_table = DBTable(
@@ -68,6 +69,7 @@ def create_table(table_in: TableCreate, db: Session = Depends(get_db)):
     db.refresh(new_table) 
     return new_table
 
+# Получить список столиков с возможностью фильтрации по зоне, вместимости и поиском по номеру
 @app.get("/api/tables", response_model=list[Table])
 def get_tables(
     limit: int = 10, 
@@ -90,6 +92,7 @@ def get_tables(
     result = db.execute(stmt).scalars().all()
     return result
 
+# Получить информацию о конкретном столике
 @app.get("/api/tables/{table_id}", response_model=Table)
 def get_table(table_id: int, db: Session = Depends(get_db)):
     db_table = db.get(DBTable, table_id)
@@ -97,6 +100,7 @@ def get_table(table_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Table not found")
     return db_table
 
+#удалить столик
 @app.delete("/api/tables/{table_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_table(table_id: int, db: Session = Depends(get_db)):
     db_table = db.get(DBTable, table_id)
@@ -105,6 +109,7 @@ def delete_table(table_id: int, db: Session = Depends(get_db)):
     db.delete(db_table)
     db.commit()
 
+#обновить информацию о столике
 @app.patch("/api/tables/{table_id}", response_model=Table)
 def update_table(table_id: int, table_in: TableUpdate, db: Session = Depends(get_db)):
     db_table = db.get(DBTable, table_id)
@@ -120,6 +125,7 @@ def update_table(table_id: int, table_in: TableUpdate, db: Session = Depends(get
     db.refresh(db_table)
     return db_table
 
+# Получить все брони для конкретного столика
 @app.get("/api/tables/{table_id}/reservations", response_model=list[ReservationResponse])
 def get_table_reservations(table_id: int, db: Session = Depends(get_db)):
     db_table = db.get(DBTable, table_id)
@@ -130,3 +136,58 @@ def get_table_reservations(table_id: int, db: Session = Depends(get_db)):
     result = db.execute(stmt).scalars().all()
     
     return result
+
+#создание брони на столик с проверкой вместимости и пересечения времени
+@app.post("/api/tables/{table_id}/reservations", status_code=status.HTTP_201_CREATED, response_model=ReservationResponse)
+def create_reservation(table_id: int, reservation_in: ReservationCreate, db: Session = Depends(get_db)):
+    db_table = db.get(DBTable, table_id)
+    if not db_table:
+        raise HTTPException(status_code=404, detail="Table not found")
+    
+    if reservation_in.guests_count > db_table.capacity:
+        raise HTTPException(
+            status_code=409, 
+            detail=f"Гостей больше, чем вместимость столика. Вместимость столика: {db_table.capacity}"
+        )
+    
+    duration = datetime.timedelta(hours=2)
+    new_start = reservation_in.date_time
+    new_end = new_start + duration
+
+    overlap_stmt = select(DBReservation).where(
+        DBReservation.table_id == table_id,
+        DBReservation.date_time < new_end,
+        DBReservation.date_time > (new_start - duration)
+    )
+    
+    overlapping_reservation = db.execute(overlap_stmt).first()
+    
+    if overlapping_reservation:
+        raise HTTPException(
+            status_code=409, 
+            detail="Столик уже забронирован на это время. Выберите другое время."
+        )
+
+    new_reservation = DBReservation(
+        table_id=table_id,
+        guest_name=reservation_in.guest_name,
+        date_time=reservation_in.date_time,
+        guests_count=reservation_in.guests_count
+    )
+
+    db.add(new_reservation)
+    db.commit()
+    db.refresh(new_reservation)
+    
+    return new_reservation
+
+# Удалить бронь по её ID
+@app.delete("/api/reservations/{reservation_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_reservation(reservation_id: int, db: Session = Depends(get_db)):
+    db_reservation = db.get(DBReservation, reservation_id)
+    
+    if not db_reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+
+    db.delete(db_reservation)
+    db.commit()
